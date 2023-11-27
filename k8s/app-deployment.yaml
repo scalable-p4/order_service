@@ -14,13 +14,11 @@ spec:
     spec:
       containers:
         - name: app
-          image: app_image
+          image: ghcr.io/scalable-p4/order_service/p4-app:latest
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
             - containerPort: 8000
-      volumes:
-        - name: app-persistent-storage
-          persistentVolumeClaim:
-            claimName: app-pvc
+      imagePullSecrets:
+        - name: regcred
