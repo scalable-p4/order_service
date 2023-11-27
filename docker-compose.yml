@@ -1,9 +1,9 @@
 version: '3.7'
 
 services:
-  app:
-    container_name: app
-    image: app_image
+  order_app:
+    container_name: order_app
+    image: order_app_image
     env_file:
       - .env
     build:
@@ -14,13 +14,13 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - app_db
+      - order_app_db
     networks:
       - ums-back-office  
 
-  app_db:
-    container_name: app_db
-    hostname: app_db
+  order_app_db:
+    container_name: order_app_db
+    hostname: order_app_db
     image: library/postgres:14.1
     environment:
       - POSTGRES_USER=app
@@ -42,6 +42,38 @@ services:
       - '--requirepass myStrongPassword'
     ports:
       - 6379:6379
+    networks:
+      - ums-back-office
+
+  order_worker:
+    container_name: order_worker
+    build: .
+    command: celery -A src.create_order worker --loglevel=info --queues q01
+    volumes:
+      - .:/order_app
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - order_app
+      - order_app_db
+      - app_redis
+    networks:
+      - ums-back-office
+
+  flower:
+    container_name: flower
+    build: .
+    command: celery -A src.order_worker.celery flower --port=5555
+    ports:
+      - 5556:5555
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - order_app
+      - app_redis
+      - order_worker
     networks:
       - ums-back-office
 

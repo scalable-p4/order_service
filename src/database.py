@@ -31,8 +31,8 @@ user_order = Table(
     metadata,
     Column("uuid", Integer, Identity(), primary_key=True),
     Column("username", String, nullable=False),
-    Column("payment_amt", LargeBinary, nullable=False),
-    Column("quantity", Boolean, server_default="false", nullable=False),
+    Column("quantity", Integer, nullable=False),
+    Column("delivery", Boolean, default=True, nullable=False),
 )
 
 metadata.create_all(engine)
