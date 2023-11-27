@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-redis
+  template:
+    metadata:
+      labels:
+        app: app-redis
+    spec:
+      containers:
+        - name: app-redis
+          image: redis:6.2-alpine
+          command:
+            - 'redis-server'
+            - '--requirepass myStrongPassword'
+          ports:
+            - containerPort: 6379
