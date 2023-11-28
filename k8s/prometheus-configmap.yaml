@@ -11,3 +11,6 @@ data:
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
+      - job_name: 'fastapi'
+        static_configs:
+          - targets: ['app:8000']
