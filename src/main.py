@@ -4,6 +4,12 @@ from src.router import router as router
 from starlette.middleware.cors import CORSMiddleware
 from src.config import app_configs, settings
 import aioredis
+from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.exporter.prometheus import PrometheusMetricsExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleExportSpanProcessor
 
 app = FastAPI()
 
@@ -18,6 +24,11 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup() -> None:
+    trace.set_tracer_provider(TracerProvider(resource=Resource.create().add_service("app")))
+    FastAPIInstrumentor().instrument()
+
+    exporter = PrometheusMetricsExporter(endpoint="http://prometheus:9090/metrics")
+    trace.get_tracer_provider().add_span_processor(SimpleExportSpanProcessor(exporter))
     await database.connect()
 
 
