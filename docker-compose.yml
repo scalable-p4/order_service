@@ -33,6 +33,38 @@ services:
     networks:
       - ums-back-office  
 
+  payment_app:
+    container_name: payment_app
+    image: payment_app_image
+    env_file:
+      - .env
+    build:
+      context: ../payment_service
+      dockerfile: Dockerfile
+    volumes:
+      - ../payment_service/:/src
+    ports:
+      - "8001:8001"
+    depends_on:
+      - payment_app_db
+    networks:
+      - ums-back-office
+
+  payment_app_db:
+    container_name: payment_app_db
+    hostname: payment_app_db
+    image: library/postgres:14.1
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=payment_app_db
+    volumes:
+      - payment_app_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - ums-back-office
+
   app_redis:
     image: redis:6.2-alpine
     hostname: redis
@@ -61,6 +93,23 @@ services:
     networks:
       - ums-back-office
 
+  payment_worker:
+    container_name: payment_worker
+    build: ../payment_service
+    command: celery -A src.create_payment worker --loglevel=info --queues q02
+    volumes:
+      - ../payment_service:/payment_app
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - DATABASE_URL_PAYMENT=${DATABASE_URL_PAYMENT}
+    depends_on:
+      - payment_app
+      - payment_app_db
+      - app_redis
+    networks:
+      - ums-back-office
+
   flower:
     container_name: flower
     build: .
@@ -79,6 +128,8 @@ services:
 
 volumes:
   app_pg_data:
+    driver: "local"
+  payment_app_pg_data:
     driver: "local"
 
 networks:

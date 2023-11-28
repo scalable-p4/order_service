@@ -32,6 +32,7 @@ def create_order(payload: dict, fn: str):
         print("creating order")
         commit_create_order(username, quantity, delivery)
         print("order committed"+str(username)+str(quantity)+str(delivery))
+        celery_app.send_task("create_payment", queue='q02', args=[payload, "pay"])
 
     elif fn == "rollback_order":
         print("rollbacking order")
