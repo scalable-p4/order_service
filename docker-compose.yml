@@ -64,6 +64,70 @@ services:
       - "5433:5432"
     networks:
       - ums-back-office
+  
+  inventory_app:
+    container_name: inventory_app
+    image: inventory_app_image
+    env_file:
+      - .env
+    build:
+      context: ../inventory_service
+      dockerfile: Dockerfile
+    volumes:
+      - ../inventory_service/:/src
+    ports:
+      - "8002:8002"
+    depends_on:
+      - inventory_app_db
+    networks:
+      - ums-back-office
+
+  inventory_app_db:
+    container_name: inventory_app_db
+    hostname: inventory_app_db
+    image: library/postgres:14.1
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=inventory_app_db
+    volumes:
+      - inventory_app_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - ums-back-office
+
+  delivery_app:
+    container_name: delivery_app
+    image: delivery_app_image
+    env_file:
+      - .env
+    build:
+      context: ../delivery_service
+      dockerfile: Dockerfile
+    volumes:
+      - ../delivery_service/:/src
+    ports:
+      - "8003:8003"
+    depends_on:
+      - delivery_app_db
+    networks:
+      - ums-back-office
+
+  delivery_app_db:
+    container_name: delivery_app_db
+    hostname: delivery_app_db
+    image: library/postgres:14.1
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=delivery_app_db
+    volumes:
+      - delivery_app_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - ums-back-office
 
   app_redis:
     image: redis:6.2-alpine
@@ -110,10 +174,47 @@ services:
     networks:
       - ums-back-office
 
+  inventory_worker:
+    container_name: inventory_worker
+    build: ../inventory_service
+    command: celery -A src.update_inventory worker --loglevel=info --queues q03
+    volumes:
+      - ../inventory_service:/inventory_app
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - DATABASE_URL_INVENTORY=${DATABASE_URL_INVENTORY}
+      - CORS_HEADERS=${CORS_HEADERS}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      - inventory_app
+      - inventory_app_db
+      - app_redis
+    networks:
+      - ums-back-office
+
+  delivery_worker:
+    container_name: delivery_worker
+    build: ../delivery_service
+    command: celery -A src.make_delivery worker --loglevel=info --queues q04
+    volumes:
+      - ../delivery_service:/delivery_app
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - DATABASE_URL_DELIVERY=${DATABASE_URL_DELIVERY}
+    depends_on:
+      - delivery_app
+      - delivery_app_db
+      - app_redis
+    networks:
+      - ums-back-office
+
   flower:
     container_name: flower
     build: .
-    command: celery -A src.order_worker.celery flower --port=5555
+    command: celery -A src.create_order flower --port=5555
     ports:
       - 5556:5555
     environment:
@@ -131,7 +232,11 @@ volumes:
     driver: "local"
   payment_app_pg_data:
     driver: "local"
-
+  inventory_app_pg_data:
+    driver: "local"
+  delivery_app_pg_data:
+    driver: "local"
+  
 networks:
   ums-back-office:
   default:

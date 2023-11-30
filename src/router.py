@@ -27,8 +27,11 @@ async def order(
     payload: dict = request_data.get("payload")
     print("payload="+str(payload))
     #await commit_create_order(payload.get("username"), payload.get("quantity"), payload.get("delivery"))
-    celery_app.send_task("create_order", queue='q01', args=[payload, fn])
-    return {"message": "order created"}
+    result = celery_app.send_task("create_order", queue='q01', args=[payload, fn])
+    # celery_app.send_task("create_order", queue='q01', args=[payload, fn])
+    return_result = result.get()
+    print("result="+str(return_result))
+    return {"message": f"order created with result = {return_result}"}
 
 async def commit_create_order(username, quantity, delivery):
     print(" inside commit_create_order")

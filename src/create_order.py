@@ -1,8 +1,10 @@
 import subprocess
 import os
 import sys
+import time
 from dotenv import load_dotenv
 from celery import Celery
+from celery.result import AsyncResult
 from sqlalchemy import insert, select
 from sqlalchemy import create_engine, insert
 from sqlalchemy.orm import sessionmaker
@@ -32,16 +34,32 @@ def create_order(payload: dict, fn: str):
         print("creating order")
         commit_create_order(username, quantity, delivery)
         print("order committed"+str(username)+str(quantity)+str(delivery))
-        celery_app.send_task("create_payment", queue='q02', args=[payload, "pay"])
+        payment_task = celery_app.send_task("create_payment", queue='q02', args=[payload, "pay"])
+        return waiting_payment_result(payment_task.id)
 
     elif fn == "rollback_order":
         print("rollbacking order")
         rollback_order(username, quantity, delivery)
         print("order rollbacked"+str(username)+str(quantity)+str(delivery))
-
+        return "failed_token_transaction"
+    elif fn == "success_token_transaction":
+        print("success_token_transaction")
+        return "success_token_transaction"
     else:
         print("invalid function"+str(username)+str(quantity)+str(delivery))
+        return "failed_token_transactopm"
 
+@celery_app.task
+def waiting_payment_result(payment_task_id):
+    time.sleep(0.3)
+    payment_result = AsyncResult(payment_task_id)
+    if payment_result.ready():
+        result_value = payment_result.result
+        print(f"Task result: {result_value}")
+        return result_value
+    else:
+        print("inventory task is still running...")
+        return "inventory task is still running..."
 
 @celery_app.task
 def commit_create_order(username, quantity, delivery):
