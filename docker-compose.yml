@@ -15,6 +15,9 @@ services:
       - "8000:8000"
     depends_on:
       - order_app_db
+      - prometheus
+      - jaeger
+      - loki
     networks:
       - ums-back-office  
 
@@ -226,6 +229,56 @@ services:
       - order_worker
     networks:
       - ums-back-office
+  
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - ums-back-office
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    networks:
+      - ums-back-office
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+    networks:
+      - ums-back-office
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - ums-back-office
+  
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - ums-back-office
 
 volumes:
   app_pg_data:
@@ -236,6 +289,7 @@ volumes:
     driver: "local"
   delivery_app_pg_data:
     driver: "local"
+  grafana_data:
   
 networks:
   ums-back-office:
