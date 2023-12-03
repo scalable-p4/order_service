@@ -244,6 +244,7 @@ services:
     ports:
       - "6831:6831/udp"
       - "16686:16686"
+      - "14250:14250"
     networks:
       - ums-back-office
 
@@ -271,12 +272,19 @@ services:
     networks:
       - ums-back-office
   
-  promtail:
-    image: grafana/promtail:latest
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.82.0
     volumes:
-      - /var/log:/var/log
-      - ./promtail-config.yaml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "4317:4317"  # Default OTLP gRPC port
+      - "4318:4318"  # Default OTLP HTTP port
+      - "9464:9464"
+    depends_on:
+      - loki
+      - jaeger
+      - prometheus
     networks:
       - ums-back-office
 
