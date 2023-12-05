@@ -10,8 +10,45 @@ from sqlalchemy import create_engine, insert
 from sqlalchemy.orm import sessionmaker
 from src.database import user_order
 import json
+
+# OpenTelemetry imports for tracing and metrics
 from opentelemetry import trace, metrics
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+from opentelemetry.instrumentation.celery import CeleryInstrumentor
+
+# Logging imports
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 import logging
+service_name = "order_worker"
+
+# Initialize TracerProvider for OTLP
+resource = Resource(attributes={SERVICE_NAME: service_name})
+trace_provider = TracerProvider(resource=resource)
+otlp_trace_exporter = OTLPSpanExporter(endpoint="otel-collector:4317", insecure=True)
+trace_provider.add_span_processor(BatchSpanProcessor(otlp_trace_exporter))
+trace.set_tracer_provider(trace_provider)
+
+# Initialize MeterProvider for OTLP
+metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint="otel-collector:4317", insecure=True))
+metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+metrics.set_meter_provider(metric_provider)
+
+# Initialize LoggerProvider for OTLP
+logger_provider = LoggerProvider(resource=resource)
+otlp_log_exporter = OTLPLogExporter(endpoint="otel-collector:4317", insecure=True)
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_log_exporter))
+handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+
+# Attach OTLP handler to root logger
+logging.getLogger().addHandler(handler)
 
 tracer = trace.get_tracer(__name__)
 meter = metrics.get_meter(__name__)
@@ -24,6 +61,8 @@ celery_app = Celery('create_order', broker=BROKER_URL,
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
+
+CeleryInstrumentor().instrument()
 
 # Metrics
 order_counter = meter.create_counter(
@@ -87,7 +126,7 @@ def create_order(payload: dict, fn: str):
 @celery_app.task
 def waiting_payment_result(payment_task_id):
     with tracer.start_as_current_span("waiting_payment_result"):
-        time.sleep(0.3)
+        time.sleep(2)
         payment_result = AsyncResult(payment_task_id)
         payment_results_counter.add(1)
 

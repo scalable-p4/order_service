@@ -57,6 +57,8 @@ app.add_middleware(
 
 FastAPIInstrumentor.instrument_app(app)
 
+tracer = trace.get_tracer(__name__)
+
 # Test counter metric
 meter = metrics.get_meter(__name__)
 request_counter = meter.create_counter(
@@ -71,9 +73,10 @@ async def startup() -> None:
 
 @app.get("/")
 async def root():
-    request_counter.add(1)
-    logging.info("Received a request at root endpoint")
-    return {"message": "Hello World"}
+    with tracer.start_as_current_span("request_order"):
+        request_counter.add(1)
+        logging.info("Received a request at root endpoint")
+        return {"message": "Hello World"}
 
 app.include_router(router, prefix="/api", tags=["API"])
 
