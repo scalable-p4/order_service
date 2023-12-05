@@ -62,7 +62,7 @@ tracer = trace.get_tracer(__name__)
 # Test counter metric
 meter = metrics.get_meter(__name__)
 request_counter = meter.create_counter(
-    name="requests_counter",
+    name="requests_order_counter",
     description="Counts total number of requests",
     unit="1",
 )
