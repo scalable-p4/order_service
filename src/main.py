@@ -39,7 +39,7 @@ metrics.set_meter_provider(metric_provider)
 logger_provider = LoggerProvider(resource=resource)
 otlp_log_exporter = OTLPLogExporter(endpoint="otel-collector:4317", insecure=True)
 logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_log_exporter))
-handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+handler = LoggingHandler(level=logging.DEBUG, logger_provider=logger_provider)
 
 # Attach OTLP handler to root logger
 logging.getLogger().addHandler(handler)
@@ -58,6 +58,7 @@ app.add_middleware(
 FastAPIInstrumentor.instrument_app(app)
 
 tracer = trace.get_tracer(__name__)
+logger = logging.getLogger(__name__)
 
 # Test counter metric
 meter = metrics.get_meter(__name__)
@@ -75,7 +76,7 @@ async def startup() -> None:
 async def root():
     with tracer.start_as_current_span("request_order"):
         request_counter.add(1)
-        logging.info("Received a request at root endpoint")
+        logger.info("Received a request at root endpoint")
         return {"message": "Hello World"}
 
 app.include_router(router, prefix="/api", tags=["API"])
