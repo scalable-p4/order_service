@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-app-db-deployment
+  labels:
+    app: order-app-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-app-db
+  template:
+    metadata:
+      labels:
+        app: order-app-db
+    spec:
+      containers:
+        - name: order-app-db-container
+          image: postgres:14.1
+          envFrom:
+        - configMapRef:
+            name: app-config
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+          - name: order-app-db-volume
+            mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: order-app-db-volume
+        persistentVolumeClaim:
+          claimName: order-app-db-pvc

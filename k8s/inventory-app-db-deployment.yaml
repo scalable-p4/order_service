@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app-db-deployment
+  labels:
+    app: inventory-app-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-app-db
+  template:
+    metadata:
+      labels:
+        app: inventory-app-db
+    spec:
+      containers:
+        - name: inventory-app-db-container
+          image: postgres:14.1
+          envFrom:
+        - configMapRef:
+            name: app-config
+          ports:
+            - containerPort: 5433
+          volumeMounts:
+          - name: inventory-app-db-volume
+            mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: inventory-app-db-volume
+        persistentVolumeClaim:
+          claimName: inventory-app-db-pvc

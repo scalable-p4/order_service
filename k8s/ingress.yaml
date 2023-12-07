@@ -13,6 +13,15 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: app
+            name: order-app
+            port:
+              number: 8000
+            name: payment-app
+            port:
+              number: 8001
+            name: inventory-app
+            port:
+              number: 8002
+            name: delivery-app
             port:
               number: 8000

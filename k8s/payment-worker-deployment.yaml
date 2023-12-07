@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-worker
+  template:
+    metadata:
+      labels:
+        app: payment-worker
+    spec:
+      containers:
+      - name: payment-worker
+        image: ghcr.io/scalable-p4/order_service/p4-app:latest
+        command: ["celery", "-A", "src.create_payment", "worker", "--loglevel=info", "--queues", "q02"]
+        envFrom:
+        - configMapRef:
+            name: app-config
+        volumeMounts:
+        - name: payment-app-volume
+          mountPath: /order_app
+      volumes:
+      - name: payment-app-volume
+        persistentVolumeClaim:
+          claimName: payment-app-pvc

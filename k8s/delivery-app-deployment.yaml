@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-app-deployment
+  labels:
+    app: delivery-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-app
+  template:
+    metadata:
+      labels:
+        app: delivery-app
+    spec:
+      containers:
+        - name: delivery-app-container
+          image: ghcr.io/scalable-p4/delivery_service/p4-app:latest
+          envFrom:
+            - configMapRef:
+                name: app-config
+          ports:
+            - containerPort: 8000
+      volumeMounts:
+        - name: delivery-app-volume
+          mountPath: /src
+      imagePullSecrets:
+        - name: regcred
+    volumes:
+      - name: delivery-app-volume
+        persistentVolumeClaim:
+          claimName: delivery-app-pvc

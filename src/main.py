@@ -4,7 +4,7 @@ from src.database import database
 from src.router import router as router
 from starlette.middleware.cors import CORSMiddleware
 from src.config import settings
-
+import os
 # OpenTelemetry imports for tracing and metrics
 from opentelemetry import trace, metrics
 from opentelemetry.sdk.trace import TracerProvider
@@ -21,23 +21,24 @@ from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 
+OTEL_ENDPOINT = os.getenv('OTEL_ENDPOINT', "otel-collector:4317")
 service_name = "order_app"
 
 # Initialize TracerProvider for OTLP
 resource = Resource(attributes={SERVICE_NAME: service_name})
 trace_provider = TracerProvider(resource=resource)
-otlp_trace_exporter = OTLPSpanExporter(endpoint="otel-collector:4317", insecure=True)
+otlp_trace_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
 trace_provider.add_span_processor(BatchSpanProcessor(otlp_trace_exporter))
 trace.set_tracer_provider(trace_provider)
 
 # Initialize MeterProvider for OTLP
-metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint="otel-collector:4317", insecure=True))
+metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint=OTEL_ENDPOINT, insecure=True))
 metric_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
 metrics.set_meter_provider(metric_provider)
 
 # Initialize LoggerProvider for OTLP
 logger_provider = LoggerProvider(resource=resource)
-otlp_log_exporter = OTLPLogExporter(endpoint="otel-collector:4317", insecure=True)
+otlp_log_exporter = OTLPLogExporter(endpoint=OTEL_ENDPOINT, insecure=True)
 logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_log_exporter))
 handler = LoggingHandler(level=logging.DEBUG, logger_provider=logger_provider)
 
