@@ -139,8 +139,8 @@ def waiting_payment_result(payment_task_id):
             logger.info(f"Payment task result: {result_value}")
             return result_value
         else:
-            logger.info("Inventory task is still running...")
-            return "inventory task is still running..."
+            logger.info("Timeout: Payment task is still running...")
+            return "Payment Timeout"
 
 @celery_app.task
 def commit_create_order(username, quantity, delivery):

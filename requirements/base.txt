@@ -3,6 +3,7 @@ alembic==1.9.1
 bcrypt
 celery==5.2.7
 redis==4.3.3
+requests==2.31.0
 databases[asyncpg]==0.7.0
 orjson==3.8.4
 psycopg2-binary==2.9.9
