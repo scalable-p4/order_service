@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: loki-service
+  name: inventory-app-service
 spec:
   selector:
-    app: loki
+    app: inventory-app
   ports:
     - protocol: TCP
-      port: 3100
-      targetPort: 3100
+      port: 80
+      targetPort: 8002
   type: ClusterIP

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app-deployment
+  labels:
+    app: inventory-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      containers:
+        - name: inventory-app-container
+          image: ghcr.io/scalable-p4/inventory_service/p4-app:latest
+          envFrom:
+            - configMapRef:
+                name: app-config
+          ports:
+            - containerPort: 8000
+      volumeMounts:
+        - name: inventory-app-volume
+          mountPath: /src
+      imagePullSecrets:
+        - name: regcred
+    volumes:
+      - name: inventory-app-volume
+        persistentVolumeClaim:
+          claimName: inventory-app-pvc

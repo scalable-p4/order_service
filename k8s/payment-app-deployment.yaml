@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-app-deployment
+  labels:
+    app: payment-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-app
+  template:
+    metadata:
+      labels:
+        app: payment-app
+    spec:
+      containers:
+        - name: payment-app-container
+          image: ghcr.io/scalable-p4/payment_service/p4-app:latest
+          envFrom:
+            - configMapRef:
+                name: app-config
+          ports:
+            - containerPort: 8000
+      volumeMounts:
+        - name: payment-app-volume
+          mountPath: /src
+      imagePullSecrets:
+        - name: regcred
+    volumes:
+      - name: payment-app-volume
+        persistentVolumeClaim:
+          claimName: payment-app-pvc

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-app-db-deployment
+  labels:
+    app: payment-app-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-app-db
+  template:
+    metadata:
+      labels:
+        app: payment-app-db
+    spec:
+      containers:
+        - name: payment-app-db-container
+          image: postgres:14.1
+          envFrom:
+        - configMapRef:
+            name: app-config
+          ports:
+            - containerPort: 5433
+          volumeMounts:
+          - name: payment-app-db-volume
+            mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: payment-app-db-volume
+        persistentVolumeClaim:
+          claimName: payment-app-db-pvc

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-worker
+  template:
+    metadata:
+      labels:
+        app: inventory-worker
+    spec:
+      containers:
+      - name: inventory-worker
+        image: ghcr.io/scalable-p4/order_service/p4-app:latest
+        command: ["celery", "-A", "src.update_inventory", "worker", "--loglevel=info", "--queues", "q03"]
+        envFrom:
+        - configMapRef:
+            name: app-config
+        volumeMounts:
+        - name: inventory-app-volume
+          mountPath: /order_app
+      volumes:
+      - name: inventory-app-volume
+        persistentVolumeClaim:
+          claimName: inventory-app-pvc

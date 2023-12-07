@@ -1,24 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: order-app-deployment
+  labels:
+    app: order-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: order-app
   template:
     metadata:
       labels:
-        app: app
+        app: order-app
     spec:
       containers:
-        - name: app
+        - name: order-app-container
           image: ghcr.io/scalable-p4/order_service/p4-app:latest
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
             - containerPort: 8000
+      volumeMounts:
+        - name: order-app-volume
+          mountPath: /src
       imagePullSecrets:
         - name: regcred
+    volumes:
+      - name: order-app-volume
+        persistentVolumeClaim:
+          claimName: order-app-pvc

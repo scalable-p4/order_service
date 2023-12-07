@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jaeger
+  name: jaeger-service
 spec:
   selector:
     app: jaeger
@@ -9,3 +9,10 @@ spec:
     - protocol: TCP
       port: 16686
       targetPort: 16686
+    - protocol: UDP
+      port: 6831
+      targetPort: 6831
+    - protocol: TCP
+      port: 14250
+      targetPort: 14250
+  type: NodePort

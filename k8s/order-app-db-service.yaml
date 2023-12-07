@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: loki-service
+  name: order-app-db-service
 spec:
   selector:
-    app: loki
+    app: order-app-db
   ports:
     - protocol: TCP
-      port: 3100
-      targetPort: 3100
+      port: 5432
+      targetPort: 5432
   type: ClusterIP
