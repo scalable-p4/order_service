@@ -18,14 +18,14 @@ spec:
         - name: order-app-db-container
           image: postgres:14.1
           envFrom:
-        - configMapRef:
-            name: app-config
+            - configMapRef:
+                name: app-config
           ports:
             - containerPort: 5432
           volumeMounts:
-          - name: order-app-db-volume
-            mountPath: /var/lib/postgresql/data
+            - name: order-app-db-volume
+              mountPath: /var/lib/postgresql/data
       volumes:
-      - name: order-app-db-volume
-        persistentVolumeClaim:
-          claimName: order-app-db-pvc
+        - name: order-app-db-volume
+          persistentVolumeClaim:
+            claimName: order-app-db-pvc

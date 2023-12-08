@@ -16,18 +16,16 @@ spec:
     spec:
       containers:
         - name: inventory-app-container
-          image: ghcr.io/scalable-p4/inventory_service/p4-app:latest
+          image: ghcr.io/scalable-p4/inventory_service/p4-inventory-app:latest
+          command: ["./scripts/start-dev.sh"]
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
-            - containerPort: 8000
-      volumeMounts:
+            - containerPort: 8002
+      volumes:
         - name: inventory-app-volume
-          mountPath: /src
+          persistentVolumeClaim:
+            claimName: inventory-app-pvc
       imagePullSecrets:
         - name: regcred
-    volumes:
-      - name: inventory-app-volume
-        persistentVolumeClaim:
-          claimName: inventory-app-pvc

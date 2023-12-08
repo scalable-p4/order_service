@@ -16,18 +16,16 @@ spec:
     spec:
       containers:
         - name: delivery-app-container
-          image: ghcr.io/scalable-p4/delivery_service/p4-app:latest
+          image: ghcr.io/scalable-p4/delivery_service/p4-delivery-app:latest
+          command: ["./scripts/start-dev.sh"]
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
-            - containerPort: 8000
-      volumeMounts:
+            - containerPort: 8003
+      volumes:
         - name: delivery-app-volume
-          mountPath: /src
+          persistentVolumeClaim:
+            claimName: delivery-app-pvc
       imagePullSecrets:
         - name: regcred
-    volumes:
-      - name: delivery-app-volume
-        persistentVolumeClaim:
-          claimName: delivery-app-pvc

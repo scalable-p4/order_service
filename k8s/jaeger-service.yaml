@@ -6,13 +6,16 @@ spec:
   selector:
     app: jaeger
   ports:
-    - protocol: TCP
+    - name: grpc
+      protocol: TCP
       port: 16686
       targetPort: 16686
-    - protocol: UDP
+    - name: udp
+      protocol: UDP
       port: 6831
       targetPort: 6831
-    - protocol: TCP
+    - name: tcp
+      protocol: TCP
       port: 14250
       targetPort: 14250
   type: NodePort

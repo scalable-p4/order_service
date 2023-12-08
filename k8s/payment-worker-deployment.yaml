@@ -14,15 +14,15 @@ spec:
     spec:
       containers:
       - name: payment-worker
-        image: ghcr.io/scalable-p4/order_service/p4-app:latest
+        image: ghcr.io/scalable-p4/payment_service/p4-payment-app:latest
         command: ["celery", "-A", "src.create_payment", "worker", "--loglevel=info", "--queues", "q02"]
         envFrom:
         - configMapRef:
             name: app-config
-        volumeMounts:
-        - name: payment-app-volume
-          mountPath: /order_app
       volumes:
       - name: payment-app-volume
         persistentVolumeClaim:
           claimName: payment-app-pvc
+      imagePullSecrets:
+        - name: regcred
+      

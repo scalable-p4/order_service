@@ -14,15 +14,17 @@ spec:
     spec:
       containers:
       - name: order-worker
-        image: ghcr.io/scalable-p4/order_service/p4-app:latest
+        image: ghcr.io/scalable-p4/order_service/p4-order-app:latest
         command: ["celery", "-A", "src.create_order", "worker", "--loglevel=info", "--queues", "q01"]
         envFrom:
         - configMapRef:
             name: app-config
         volumeMounts:
         - name: order-app-volume
-          mountPath: /order_app
+          mountPath: /src
       volumes:
       - name: order-app-volume
         persistentVolumeClaim:
           claimName: order-app-pvc
+      imagePullSecrets:
+        - name: regcred

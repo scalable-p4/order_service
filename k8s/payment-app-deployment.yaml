@@ -16,18 +16,16 @@ spec:
     spec:
       containers:
         - name: payment-app-container
-          image: ghcr.io/scalable-p4/payment_service/p4-app:latest
+          image: ghcr.io/scalable-p4/payment_service/p4-payment-app:latest
+          command: ["./scripts/start-dev.sh"]
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
-            - containerPort: 8000
-      volumeMounts:
+            - containerPort: 8001
+      volumes:
         - name: payment-app-volume
-          mountPath: /src
+          persistentVolumeClaim:
+            claimName: payment-app-pvc
       imagePullSecrets:
         - name: regcred
-    volumes:
-      - name: payment-app-volume
-        persistentVolumeClaim:
-          claimName: payment-app-pvc

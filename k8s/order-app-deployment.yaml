@@ -16,18 +16,16 @@ spec:
     spec:
       containers:
         - name: order-app-container
-          image: ghcr.io/scalable-p4/order_service/p4-app:latest
+          image: ghcr.io/scalable-p4/order_service/p4-order-app:latest
+          command: ["./scripts/start-dev.sh"]
           envFrom:
             - configMapRef:
                 name: app-config
           ports:
             - containerPort: 8000
-      volumeMounts:
+      volumes:
         - name: order-app-volume
-          mountPath: /src
+          persistentVolumeClaim:
+            claimName: order-app-pvc
       imagePullSecrets:
         - name: regcred
-    volumes:
-      - name: order-app-volume
-        persistentVolumeClaim:
-          claimName: order-app-pvc

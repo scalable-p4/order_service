@@ -18,14 +18,14 @@ spec:
         - name: payment-app-db-container
           image: postgres:14.1
           envFrom:
-        - configMapRef:
-            name: app-config
+            - configMapRef:
+                name: app-config
           ports:
             - containerPort: 5433
           volumeMounts:
-          - name: payment-app-db-volume
-            mountPath: /var/lib/postgresql/data
+            - name: payment-app-db-volume
+              mountPath: /var/lib/postgresql/data
       volumes:
-      - name: payment-app-db-volume
-        persistentVolumeClaim:
-          claimName: payment-app-db-pvc
+        - name: payment-app-db-volume
+          persistentVolumeClaim:
+            claimName: payment-app-db-pvc

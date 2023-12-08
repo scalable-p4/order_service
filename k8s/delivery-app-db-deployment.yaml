@@ -18,14 +18,14 @@ spec:
         - name: delivery-app-db-container
           image: postgres:14.1
           envFrom:
-        - configMapRef:
-            name: app-config
+            - configMapRef:
+                name: app-config
           ports:
-            - containerPort: 5433
+            - containerPort: 5435
           volumeMounts:
-          - name: delivery-app-db-volume
-            mountPath: /var/lib/postgresql/data
+            - name: delivery-app-db-volume
+              mountPath: /var/lib/postgresql/data
       volumes:
-      - name: deliveryapp-db-volume
-        persistentVolumeClaim:
-          claimName: delivery-app-db-pvc
+        - name: delivery-app-db-volume
+          persistentVolumeClaim:
+            claimName: delivery-app-db-pvc

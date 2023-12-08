@@ -18,14 +18,14 @@ spec:
         - name: inventory-app-db-container
           image: postgres:14.1
           envFrom:
-        - configMapRef:
-            name: app-config
+            - configMapRef:
+                name: app-config
           ports:
-            - containerPort: 5433
+            - containerPort: 5434
           volumeMounts:
-          - name: inventory-app-db-volume
-            mountPath: /var/lib/postgresql/data
+            - name: inventory-app-db-volume
+              mountPath: /var/lib/postgresql/data
       volumes:
-      - name: inventory-app-db-volume
-        persistentVolumeClaim:
-          claimName: inventory-app-db-pvc
+        - name: inventory-app-db-volume
+          persistentVolumeClaim:
+            claimName: inventory-app-db-pvc
