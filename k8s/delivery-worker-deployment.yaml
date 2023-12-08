@@ -19,9 +19,6 @@ spec:
         envFrom:
         - configMapRef:
             name: app-config
-        volumeMounts:
-        - name: delivery-app-volume
-          mountPath: /src
       volumes:
       - name: delivery-app-volume
         persistentVolumeClaim:

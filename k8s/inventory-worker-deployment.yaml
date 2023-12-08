@@ -19,9 +19,6 @@ spec:
         envFrom:
         - configMapRef:
             name: app-config
-        volumeMounts:
-        - name: inventory-app-volume
-          mountPath: /src
       volumes:
       - name: inventory-app-volume
         persistentVolumeClaim:

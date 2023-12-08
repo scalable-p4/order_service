@@ -21,7 +21,7 @@ spec:
             - configMapRef:
                 name: app-config
           ports:
-            - containerPort: 5434
+            - containerPort: 5432
           volumeMounts:
             - name: inventory-app-db-volume
               mountPath: /var/lib/postgresql/data

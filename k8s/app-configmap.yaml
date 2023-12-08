@@ -9,15 +9,16 @@ data:
   JWT_ALG: "HS256"
   JWT_EXP: "21000"
   JWT_SECRET: "SECRET"
-  DATABASE_URL: "postgresql://app:app@order_app_db:5432/app"
-  DATABASE_URL_PAYMENT: "postgresql://app:app@payment_app_db:5432/payment_app_db"
-  DATABASE_URL_INVENTORY: "postgresql://app:app@inventory_app_db:5432/inventory_app_db"
-  DATABASE_URL_DELIVERY: "postgresql://app:app@delivery_app_db:5432/delivery_app_db"
-  REDIS_URL: "redis://:myStrongPassword@redis:6379"
+  DATABASE_URL: "postgresql://app:app@order-app-db-service:5432/app"
+  DATABASE_URL_PAYMENT: "postgresql://app:app@payment-app-db-service:5432/app"
+  DATABASE_URL_INVENTORY: "postgresql://app:app@inventory-app-db-service:5432/app"
+  DATABASE_URL_DELIVERY: "postgresql://app:app@delivery-app-db-service:5432/app"
+  REDIS_URL: "redis://:myStrongPassword@app-redis:6379"
   SITE_DOMAIN: "127.0.0.1"
   SECURE_COOKIES: "false"
-  CELERY_BROKER_URL: "redis://:myStrongPassword@redis:6379"
-  CELERY_RESULT_BACKEND: "redis://:myStrongPassword@redis:6379"
+  CELERY_BROKER_URL: "redis://:myStrongPassword@app-redis:6379"
+  CELERY_RESULT_BACKEND: "redis://:myStrongPassword@app-redis:6379"
   ENVIRONMENT: "LOCAL"
   CORS_HEADERS: '["*"]'
   CORS_ORIGINS: '["http://localhost:3000"]'
+  OTEL_ENDPOINT: 'otel-collector-service:4317'

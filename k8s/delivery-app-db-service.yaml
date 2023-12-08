@@ -8,5 +8,5 @@ spec:
   ports:
     - protocol: TCP
       port: 5432
-      targetPort: 5435
+      targetPort: 5432
   type: ClusterIP
