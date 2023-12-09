@@ -24,4 +24,4 @@ spec:
               number: 8002
             name: delivery-app
             port:
-              number: 8000
+              number: 8003
